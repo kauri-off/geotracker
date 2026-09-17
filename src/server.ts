@@ -4,11 +4,20 @@ import { join } from "node:path";
 import { Adb } from "./adb";
 import { Player, type PlayerState } from "./player";
 import { buildTimeline, type Route } from "./geo";
+import indexHtmlRaw from "../public/index.html" with { type: "text" };
+const indexHtml = indexHtmlRaw as unknown as string;
+import appJs from "../public/app.js" with { type: "text" };
+import styleCss from "../public/style.css" with { type: "text" };
 
-const ROOT = import.meta.dir + "/..";
+const ROOT = process.env.MOCKWALK_HOME ?? process.cwd();
 const ROUTES_DIR = join(ROOT, "routes");
 const DATA_DIR = join(ROOT, "data");
-const PUBLIC_DIR = join(ROOT, "public");
+const STATIC: Record<string, [string, string]> = {
+  "/": [indexHtml, "text/html; charset=utf-8"],
+  "/index.html": [indexHtml, "text/html; charset=utf-8"],
+  "/app.js": [appJs, "text/javascript; charset=utf-8"],
+  "/style.css": [styleCss, "text/css; charset=utf-8"],
+};
 const SESSION_FILE = join(DATA_DIR, "session.json");
 const PORT = Number(process.env.PORT ?? 3210);
 if (!Number.isInteger(PORT) || PORT <= 0) { console.error(`Некорректный PORT: ${process.env.PORT}`); process.exit(1); }
@@ -133,9 +142,8 @@ function serve() {
     if (p === "/api/session") return json(await loadSession());
     if (p === "/api/log") return json(logBuf);
 
-    if (p === "/") return new Response(Bun.file(join(PUBLIC_DIR, "index.html")));
-    const f = Bun.file(join(PUBLIC_DIR, p.replace(/^\/+/, "").replace(/\.\./g, "")));
-    if (await f.exists()) return new Response(f);
+    const st = STATIC[p];
+    if (st) return new Response(st[0], { headers: { "content-type": st[1] } });
     return new Response("not found", { status: 404 });
   },
   websocket: {
@@ -202,7 +210,7 @@ async function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-log(`server on http://localhost:${PORT}`);
+log(`server on http://localhost:${PORT} (маршруты и сессия в ${ROOT})`);
 {
   const info = await deviceInfo();
   if (info.problem) log(`⚠ ${info.problem}`);

@@ -12,10 +12,21 @@
 
 ## Запуск
 
+Из исходников:
+
 ```
 bun run start          # http://localhost:3210
 ADB_SERIAL=xxx bun run start   # если подключено несколько телефонов
 ```
+
+Готовый бинарник из [Releases](https://github.com/kauri-off/geotracker/releases): Bun не нужен, только adb. Запускай из папки, где хочешь хранить маршруты, либо задай `MOCKWALK_HOME`:
+
+```
+chmod +x mockwalk-linux-x64
+PORT=3210 ./mockwalk-linux-x64
+```
+
+Релиз собирается вручную: Actions → Release → Run workflow, указать тег.
 
 Телефон: USB-отладка включена, mock-приложение не нужно, shell сам становится mock-провайдером.
 
