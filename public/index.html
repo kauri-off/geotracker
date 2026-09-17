@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Mock Walk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <header>
+      <h1>Mock Walk</h1>
+      <div id="device" class="pill">телефон: …</div>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <select id="routeSelect"></select>
+        <button id="newRoute" title="Новый маршрут">＋</button>
+        <button id="deleteRoute" title="Удалить" class="danger">🗑</button>
+      </div>
+      <div class="row">
+        <input id="routeName" placeholder="Название маршрута">
+        <button id="saveRoute" class="primary">Сохранить</button>
+      </div>
+      <div id="dirty" class="hint"></div>
+    </section>
+
+    <section class="card">
+      <div class="grid2">
+        <label>Скорость, км/ч <input id="speedKmh" type="number" step="0.1" min="0.3" value="5"></label>
+        <label>Дрожание, м <input id="noisePos" type="number" step="0.5" min="0" value="1.5"></label>
+        <label>Разброс скорости, % <input id="noiseSpeed" type="number" step="1" min="0" value="15"></label>
+        <label>Accuracy, м <span class="pair"><input id="accMin" type="number" min="1" value="3"><input id="accMax" type="number" min="1" value="8"></span></label>
+      </div>
+      <div class="hint">Клик по карте добавляет точку. Точки можно тянуть. Правый клик по точке удаляет. Клик по линии вставляет точку.</div>
+    </section>
+
+    <section class="card metrics">
+      <div class="stat"><span>Длина</span><b id="mDist">0 м</b></div>
+      <div class="stat"><span>Время</span><b id="mTime">0с</b></div>
+      <div class="stat"><span>Движение</span><b id="mMove">0с</b></div>
+      <div class="stat"><span>Паузы</span><b id="mPause">0с</b></div>
+      <div class="stat"><span>Ср. скорость</span><b id="mSpeed">0 км/ч</b></div>
+      <div class="stat"><span>Точек</span><b id="mPts">0</b></div>
+    </section>
+
+    <section class="card">
+      <div class="row between">
+        <b>Превью</b>
+        <span><button id="pvPlay">▶</button><button id="pvStop">■</button>
+        <select id="pvRate"><option value="1">1×</option><option value="5">5×</option><option value="20" selected>20×</option><option value="60">60×</option></select></span>
+      </div>
+      <input id="pvSlider" type="range" min="0" max="1000" value="0">
+      <div id="pvInfo" class="hint">—</div>
+    </section>
+
+    <section class="card">
+      <div class="row between">
+        <b>Телефон</b>
+        <span id="playStatus" class="pill">idle</span>
+      </div>
+      <div class="row">
+        <button id="play" class="primary">▶ Играть</button>
+        <button id="pause">⏸</button>
+        <button id="resume">⏵</button>
+        <button id="stop">■</button>
+      </div>
+      <input id="playSlider" type="range" min="0" max="1000" value="0">
+      <div id="playInfo" class="hint">—</div>
+      <div id="confirmInfo" class="hint">—</div>
+      <div class="row">
+        <button id="setup" title="Включить mock-провайдеры">Setup mock</button>
+        <button id="cleanup" class="danger" title="Снять mock, вернуть реальный GPS">Cleanup</button>
+        <button id="holdStart" title="Поставить телефон на старт маршрута">На старт</button>
+      </div>
+      <label class="check"><input id="autoResume" type="checkbox" checked> авто-продолжение после потери adb</label>
+      <div id="sessionHint" class="hint"></div>
+    </section>
+
+    <section class="card">
+      <div class="row between"><b>Точки</b><button id="clearPts" class="danger small">очистить</button></div>
+      <table id="ptsTable"><thead><tr><th>#</th><th>сегмент</th><th>пауза, с</th><th>км/ч</th><th></th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <section class="card">
+      <b>Лог</b>
+      <pre id="log"></pre>
+    </section>
+  </aside>
+  <div id="map"></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

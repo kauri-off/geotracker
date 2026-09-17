@@ -1,0 +1,7 @@
+node_modules/
+data/
+routes/*.json
+!routes/.gitkeep
+*.png
+*.log
+.env

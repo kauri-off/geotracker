@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit -p .
+      - run: bun test
+      - name: Smoke start without adb
+        run: |
+          PORT=3999 bun run src/server.ts > server.log 2>&1 &
+          sleep 3
+          curl -sf http://localhost:3999/api/device | tee device.json
+          grep -q '"adb-missing"' device.json
+          grep -q 'platform-tools' server.log
