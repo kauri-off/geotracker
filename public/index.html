@@ -4,95 +4,126 @@
 <meta charset="utf-8">
 <title>Mock Walk</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <div id="app">
   <aside id="side">
-    <header>
-      <h1>Mock Walk</h1>
-      <div id="device" class="pill">телефон: …</div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo"><i data-lucide="footprints"></i></div>
+        <div>
+          <h1>Mock Walk</h1>
+          <div class="sub">mock GPS через adb</div>
+        </div>
+      </div>
+      <div id="device" class="pill"><span class="dot"></span><span class="txt">телефон: …</span></div>
     </header>
 
-    <section class="card">
-      <div class="row">
-        <select id="routeSelect"></select>
-        <button id="newRoute" title="Новый маршрут">＋</button>
-        <button id="deleteRoute" title="Удалить" class="danger">🗑</button>
-      </div>
-      <div class="row">
-        <input id="routeName" placeholder="Название маршрута">
-        <button id="saveRoute" class="primary">Сохранить</button>
-      </div>
-      <div id="dirty" class="hint"></div>
-    </section>
+    <div class="scroll">
+      <section class="card">
+        <div class="card-h"><i data-lucide="route"></i><span>Маршрут</span></div>
+        <div class="row">
+          <div class="select-wrap"><select id="routeSelect"></select><i data-lucide="chevrons-up-down"></i></div>
+          <button id="newRoute" class="icon" title="Новый маршрут"><i data-lucide="plus"></i></button>
+          <button id="deleteRoute" class="icon danger" title="Удалить маршрут"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div class="row">
+          <input id="routeName" placeholder="Название маршрута">
+          <button id="saveRoute" class="primary"><i data-lucide="save"></i>Сохранить</button>
+        </div>
+        <div id="dirty" class="banner warn" hidden><i data-lucide="circle-alert"></i><span>Есть несохранённые изменения. Для проигрывания на телефоне нужно сохранить.</span></div>
+      </section>
 
-    <section class="card">
-      <div class="grid2">
-        <label>Скорость, км/ч <input id="speedKmh" type="number" step="0.1" min="0.3" value="5"></label>
-        <label>Дрожание, м <input id="noisePos" type="number" step="0.5" min="0" value="1.5"></label>
-        <label>Разброс скорости, % <input id="noiseSpeed" type="number" step="1" min="0" value="15"></label>
-        <label>Accuracy, м <span class="pair"><input id="accMin" type="number" min="1" value="3"><input id="accMax" type="number" min="1" value="8"></span></label>
-      </div>
-      <div class="hint">Клик по карте добавляет точку. Точки можно тянуть. Правый клик по точке удаляет. Клик по линии вставляет точку.</div>
-    </section>
+      <section class="card metrics">
+        <div class="stat"><span><i data-lucide="ruler"></i>Длина</span><b id="mDist">0 м</b></div>
+        <div class="stat"><span><i data-lucide="clock"></i>Время</span><b id="mTime">0с</b></div>
+        <div class="stat"><span><i data-lucide="activity"></i>Движение</span><b id="mMove">0с</b></div>
+        <div class="stat"><span><i data-lucide="coffee"></i>Паузы</span><b id="mPause">0с</b></div>
+        <div class="stat"><span><i data-lucide="gauge"></i>Ср. скорость</span><b id="mSpeed">0 км/ч</b></div>
+        <div class="stat"><span><i data-lucide="map-pin"></i>Точек</span><b id="mPts">0</b></div>
+      </section>
 
-    <section class="card metrics">
-      <div class="stat"><span>Длина</span><b id="mDist">0 м</b></div>
-      <div class="stat"><span>Время</span><b id="mTime">0с</b></div>
-      <div class="stat"><span>Движение</span><b id="mMove">0с</b></div>
-      <div class="stat"><span>Паузы</span><b id="mPause">0с</b></div>
-      <div class="stat"><span>Ср. скорость</span><b id="mSpeed">0 км/ч</b></div>
-      <div class="stat"><span>Точек</span><b id="mPts">0</b></div>
-    </section>
+      <details class="card" open>
+        <summary class="card-h"><i data-lucide="sliders-horizontal"></i><span>Параметры</span><i data-lucide="chevron-down" class="chev"></i></summary>
+        <div class="grid2">
+          <label>Скорость <span class="field"><input id="speedKmh" type="number" step="0.1" min="0.3" value="5"><em>км/ч</em></span></label>
+          <label>Дрожание <span class="field"><input id="noisePos" type="number" step="0.5" min="0" value="1.5"><em>м</em></span></label>
+          <label>Разброс скорости <span class="field"><input id="noiseSpeed" type="number" step="1" min="0" value="15"><em>%</em></span></label>
+          <label>Accuracy <span class="pair"><span class="field"><input id="accMin" type="number" min="1" value="3"></span><span class="sep">–</span><span class="field"><input id="accMax" type="number" min="1" value="8"><em>м</em></span></span></label>
+        </div>
+      </details>
 
-    <section class="card">
-      <div class="row between">
-        <b>Превью</b>
-        <span><button id="pvPlay">▶</button><button id="pvStop">■</button>
-        <select id="pvRate"><option value="1">1×</option><option value="5">5×</option><option value="20" selected>20×</option><option value="60">60×</option></select></span>
-      </div>
-      <input id="pvSlider" type="range" min="0" max="1000" value="0">
-      <div id="pvInfo" class="hint">—</div>
-    </section>
+      <section class="card">
+        <div class="card-h"><i data-lucide="eye"></i><span>Превью</span>
+          <div class="seg" id="pvRateSeg">
+            <button data-rate="1">1×</button><button data-rate="5">5×</button><button data-rate="20" class="on">20×</button><button data-rate="60">60×</button>
+          </div>
+        </div>
+        <div class="player">
+          <button id="pvPlay" class="icon round" title="Превью"><i data-lucide="play"></i></button>
+          <button id="pvStop" class="icon round ghost" title="В начало"><i data-lucide="skip-back"></i></button>
+          <input id="pvSlider" type="range" min="0" max="1000" value="0">
+        </div>
+        <div id="pvInfo" class="info">—</div>
+      </section>
 
-    <section class="card">
-      <div class="row between">
-        <b>Телефон</b>
-        <span id="playStatus" class="pill">idle</span>
-      </div>
-      <div class="row">
-        <button id="play" class="primary">▶ Играть</button>
-        <button id="pause">⏸</button>
-        <button id="resume">⏵</button>
-        <button id="stop">■</button>
-      </div>
-      <input id="playSlider" type="range" min="0" max="1000" value="0">
-      <div id="playInfo" class="hint">—</div>
-      <div id="confirmInfo" class="hint">—</div>
-      <div class="row">
-        <button id="setup" title="Включить mock-провайдеры">Setup mock</button>
-        <button id="cleanup" class="danger" title="Снять mock, вернуть реальный GPS">Cleanup</button>
-        <button id="holdStart" title="Поставить телефон на старт маршрута">На старт</button>
-      </div>
-      <label class="check"><input id="autoResume" type="checkbox" checked> авто-продолжение после потери adb</label>
-      <div id="sessionHint" class="hint"></div>
-    </section>
+      <section class="card phone-card">
+        <div class="card-h"><i data-lucide="smartphone"></i><span>Телефон</span><span id="playStatus" class="pill"><span class="dot"></span><span class="txt">idle</span></span></div>
+        <div class="row">
+          <button id="play" class="primary grow"><i data-lucide="play"></i>Играть</button>
+          <button id="pause" class="icon" title="Пауза"><i data-lucide="pause"></i></button>
+          <button id="resume" class="icon" title="Продолжить"><i data-lucide="step-forward"></i></button>
+          <button id="stop" class="icon" title="Стоп"><i data-lucide="square"></i></button>
+        </div>
+        <input id="playSlider" type="range" min="0" max="1000" value="0">
+        <div id="playInfo" class="info">—</div>
+        <div id="confirmInfo" class="info">—</div>
+        <div class="row tools">
+          <button id="setup" title="Включить mock-провайдеры"><i data-lucide="plug-zap"></i>Setup</button>
+          <button id="holdStart" title="Поставить телефон на старт маршрута"><i data-lucide="flag"></i>На старт</button>
+          <button id="cleanup" class="danger" title="Снять mock, вернуть реальный GPS"><i data-lucide="satellite"></i>Cleanup</button>
+        </div>
+        <label class="switch"><input id="autoResume" type="checkbox" checked><span class="track"></span>Авто-продолжение после потери adb</label>
+        <div id="sessionHint"></div>
+      </section>
 
-    <section class="card">
-      <div class="row between"><b>Точки</b><button id="clearPts" class="danger small">очистить</button></div>
-      <table id="ptsTable"><thead><tr><th>#</th><th>сегмент</th><th>пауза, с</th><th>км/ч</th><th></th></tr></thead><tbody></tbody></table>
-    </section>
+      <section class="card">
+        <div class="card-h"><i data-lucide="list-ordered"></i><span>Точки</span><button id="clearPts" class="danger small"><i data-lucide="eraser"></i>Очистить</button></div>
+        <div class="table-wrap">
+          <table id="ptsTable"><thead><tr><th>#</th><th>Сегмент</th><th>Пауза, с</th><th>км/ч</th><th></th></tr></thead><tbody></tbody></table>
+          <div id="ptsEmpty" class="empty"><i data-lucide="mouse-pointer-click"></i>Кликните по карте, чтобы добавить первую точку</div>
+        </div>
+      </section>
 
-    <section class="card">
-      <b>Лог</b>
-      <pre id="log"></pre>
-    </section>
+      <details class="card">
+        <summary class="card-h"><i data-lucide="terminal"></i><span>Лог</span><i data-lucide="chevron-down" class="chev"></i></summary>
+        <pre id="log"></pre>
+      </details>
+    </div>
   </aside>
-  <div id="map"></div>
+  <main id="mapWrap">
+    <div id="map"></div>
+    <div class="map-hint"><i data-lucide="info"></i><span>Клик добавляет точку · тяните точки · ПКМ по точке удаляет · клик по линии вставляет</span></div>
+    <div class="legend">
+      <div><span class="lg start"></span>старт</div>
+      <div><span class="lg finish"></span>финиш</div>
+      <div><span class="lg ghost"></span>превью</div>
+      <div><span class="lg phone"></span>отправлено</div>
+      <div><span class="lg confirm"></span>подтверждено</div>
+    </div>
+  </main>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="app.js"></script>
+<dialog id="confirmDlg">
+  <form method="dialog">
+    <div class="dlg-icon"><i data-lucide="triangle-alert"></i></div>
+    <p id="confirmText"></p>
+    <div class="row end">
+      <button value="cancel">Отмена</button>
+      <button value="ok" class="danger solid">Подтвердить</button>
+    </div>
+  </form>
+</dialog>
+<script type="module" src="./app.ts"></script>
 </body>
 </html>

@@ -85,7 +85,7 @@ export function lerp(a: Waypoint, b: Waypoint, f: number) {
   return { lat: a.lat + (b.lat - a.lat) * f, lon: a.lon + (b.lon - a.lon) * f };
 }
 
-export function buildTimeline(route: Route): Timeline {
+export function buildTimeline(route: Pick<Route, "waypoints" | "speedMps">): Timeline {
   const wps = route.waypoints;
   const segments: Segment[] = [];
   let t = 0;
@@ -131,7 +131,7 @@ export function buildTimeline(route: Route): Timeline {
   };
 }
 
-export function positionAt(route: Route, tl: Timeline, t: number): Pos | null {
+export function positionAt(route: Pick<Route, "waypoints">, tl: Timeline, t: number): Pos | null {
   const wps = route.waypoints;
   if (!wps.length) return null;
   if (tl.segments.length === 0) {
